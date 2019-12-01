@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "target": "ESNEXT",
+    "strict": true,
+    "allowSyntheticDefaultImports": true
+  }
+}
