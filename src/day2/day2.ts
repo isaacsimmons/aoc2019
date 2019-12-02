@@ -1,9 +1,12 @@
 import { readFileSync } from 'fs';
 
-const FILENAME = 'src/day2/test1.txt';
+const FILENAME = 'src/day2/input.txt';
 
 const inputText = readFileSync(FILENAME).toString().trim();
 const program = inputText.split(',').map(Number);
+
+program[1] = 12;
+program[2] = 2;
 
 type AccessType = 'operator' | 'read' | 'write';
 enum Operator {
