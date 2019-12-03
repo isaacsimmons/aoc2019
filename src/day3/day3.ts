@@ -19,6 +19,7 @@ const parseInstruction = (s: string): Instruction =>  ({
 const parseInstructions = (s: string): Instruction[] => s.trim().split(',').map(parseInstruction);
 
 const instructions = inputLines.map(parseInstructions);
+const [instructions1, instructions2] = instructions;
 
 console.log(inputLines, instructions);
 
@@ -46,6 +47,30 @@ const intersects = (s1: Segment, s2: Segment): Point|null => {
     }
 
     return { x: intersectXMin, y: intersectYMin };
+}
+
+const containsPoint = (start: Point, end: Point, search: Point): number|null => {
+    if (start.x === end.x) {
+        if (search.x !== start.x) {
+            return null;
+        }
+        if (search.y > Math.max(start.y, end.y) || search.y < Math.min(start.y, end.y)) {
+            return null;
+        }
+        return Math.abs(search.y - start.y);
+    }
+
+    if (start.y === end.y) {
+        if (search.y !== start.y) {
+            return null;
+        }
+        if (search.x > Math.max(start.x, end.x) || search.x < Math.min(start.x, end.x)) {
+            return null;
+        }
+        return Math.abs(search.x - start.x);
+    }
+
+    throw new Error('Segment didn\'t have same start or end x/y');
 }
 
 const move = (initial: Point, { heading, distance }: Instruction): Point => {
@@ -102,7 +127,25 @@ const distanceOrigin = (p: Point): number => {
     return Math.abs(p.x) + Math.abs(p.y)
 }
 
+const stepsToIntersection = (p: Point, wireDirections: Instruction[]): number => {
+    let steps = 0;
+    let currentPoint: Point = { x: 0, y: 0 };
+    for (const instruction of wireDirections) {
+        const nextPoint = move(currentPoint, instruction);
+        const distanceOnSegment = containsPoint(currentPoint, nextPoint, p);
+        if (distanceOnSegment !== null) {
+            return steps + distanceOnSegment;
+        }
+        steps += instruction.distance;
+        currentPoint = nextPoint;
+    }
+    throw new Error(`Didn't find expected point (${p.x}, ${p.y}) on wire path`);
+}
+
+const combinedStepsToIntersection = (p: Point): number => 
+    stepsToIntersection(p, instructions1) + stepsToIntersection(p, instructions2);
+
 console.log('intersections', intersections);
-const intersectionDistances = intersections.map(distanceOrigin).filter(x => x > 0);
+const intersectionDistances = intersections.map(combinedStepsToIntersection).filter(x => x > 0);
 const shortest = Math.min(...intersectionDistances);
 console.log('Closest intersection distance', shortest);
