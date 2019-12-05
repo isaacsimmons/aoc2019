@@ -18,6 +18,13 @@ export default class Computer {
 
         const params = this.memory.readMany(this.address + 1, operator.numParams);
         operator.operate(params, paramModes, this);
+
+        // If we have overwritten the current instruction, leave the pointer where it is and don't advance
+        const newOpCode = this.memory.read(this.address);
+        if (newOpCode !== opCode) {
+            return;
+        }
+
         this.address += 1 + operator.numParams;
     }
 

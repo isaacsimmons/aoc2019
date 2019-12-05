@@ -8,6 +8,6 @@ const inputText = readFileSync(FILENAME).toString().trim();
 //TODO: input array should come from file as well
 const program = inputText.split(',').map(Number);
 
-const computer = new Computer(new Memory(program), [1]);
+const computer = new Computer(new Memory(program), [5]);
 computer.run();
-console.log(computer.memory.memory, computer.output);
+console.log(computer.output);
