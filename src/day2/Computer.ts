@@ -1,27 +1,43 @@
 import Memory from "./memory";
-import { AllOperators } from "./operators";
+import { parseOperator } from './operators';
 
 export default class Computer {
     address: number = 0;
     terminated: boolean = false;
+    readonly output: number[] = [];
+    inputPosition = 0;
 
-    constructor(readonly memory: Memory) {}
+    constructor(readonly memory: Memory, readonly input: number[]) {}
 
     runStep() {
         const opCode = this.memory.read(this.address);
-        const operator = AllOperators.get(opCode);
+        const { operator, paramModes } = parseOperator(opCode);
         if (!operator) {
             throw new Error(`Unknown opCode ${opCode} at address ${this.address}`)
         }
 
         const params = this.memory.readMany(this.address + 1, operator.numParams);
-        this.terminated = operator.operate(params, this.memory);
+        operator.operate(params, paramModes, this);
         this.address += 1 + operator.numParams;
     }
 
-    run () {
+    run() {
+        // this.terminated = false;
+        // this.inputPosition = 0;
+        // this.output.splice(0, this.output.length);
         while (!this.terminated) {
             this.runStep();
         }
+    }
+
+    readInput() {
+        if (this.input.length >= this.inputPosition) {
+            throw new Error('Tried to read past end of input');
+        }
+        return this.input[this.inputPosition++];
+    }
+
+    writeOutput(val: number) {
+        this.output.push(val);
     }
 }

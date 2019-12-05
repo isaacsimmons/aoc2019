@@ -11,7 +11,7 @@ const testInputs = (noun: number, verb: number): number => {
     const memory = [...program];
     memory[1] = noun;
     memory[2] = verb;
-    const computer = new Computer(new Memory(memory));
+    const computer = new Computer(new Memory(memory), []);
     computer.run();
     return computer.memory.read(0);
 }

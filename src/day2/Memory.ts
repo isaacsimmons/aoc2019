@@ -6,10 +6,11 @@ export default class Memory {
     }
 
     read(address: number): number {
-        if (address < 0 || address >= this.memory.length) {
+        const val = this.memory[address];
+        if (val === undefined) {
             throw new Error(`Out of bounds: Attempted to read from address ${address}`);
         }
-        return this.memory[address]!;
+        return val;
     }
 
     write(address: number, val: number) {
