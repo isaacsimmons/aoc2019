@@ -31,7 +31,7 @@ export default class Computer {
     }
 
     readInput() {
-        if (this.input.length >= this.inputPosition) {
+        if (this.inputPosition >= this.input.length) {
             throw new Error('Tried to read past end of input');
         }
         return this.input[this.inputPosition++];

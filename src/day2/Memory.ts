@@ -21,7 +21,7 @@ export default class Memory {
     }
 
     readMany(address: number, length: number): number[] {
-        if (address < 0 || address > this.memory.length || length < 0 || address + length >= this.memory.length) {
+        if (address < 0 || address > this.memory.length || length < 0 || address + length > this.memory.length) {
             throw new Error(`Out of bounds: Attempted to read range from address ${address}:${length}`);
         }
         return this.memory.slice(address, address + length);

@@ -46,11 +46,8 @@ const read: Operator = {
 
 const write: Operator = {
     numParams: 1,
-    operate: ([idx], [mode], computer) => {
-        if (mode === 'immediate') {
-            throw new Error('Tried to write in immediate mode');
-        }
-        const val = computer.memory.read(idx);
+    operate: ([p1], [mode], computer) => {
+        const val = mode === 'position' ? computer.memory.read(p1) : p1;
         computer.writeOutput(val);
     },
 }
