@@ -1,4 +1,4 @@
-import Memory from "./memory";
+import Memory from "./Memory";
 import { parseOperator } from './operators';
 
 export default class Computer {

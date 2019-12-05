@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
-import Computer from './Computer';
-import Memory from './memory';
+import Computer from '../compute/Computer';
+import Memory from '../compute/Memory';
 
 const FILENAME = 'src/day2/input.txt';
 
