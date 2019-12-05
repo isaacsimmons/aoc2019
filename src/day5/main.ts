@@ -1,10 +1,9 @@
-import { readFileSync } from 'fs';
+import { readInputFile } from '../utils/file';
 import Computer from '../compute/Computer';
 import Memory from '../compute/Memory';
 
-const FILENAME = 'src/day5/input.txt';
+const inputText = readInputFile(5, 'input');
 
-const inputText = readFileSync(FILENAME).toString().trim();
 //TODO: input array should come from file as well
 const program = inputText.split(',').map(Number);
 

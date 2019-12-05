@@ -1,10 +1,8 @@
-import { readFileSync } from 'fs';
+import { readInputFile } from '../utils/file';
 import Computer from '../compute/Computer';
 import Memory from '../compute/Memory';
 
-const FILENAME = 'src/day2/input.txt';
-
-const inputText = readFileSync(FILENAME).toString().trim();
+const inputText = readInputFile(2, 'input');
 const program = inputText.split(',').map(Number);
 
 const testInputs = (noun: number, verb: number): number => {

@@ -1,6 +1,6 @@
-import { readFileSync } from 'fs';
+import { readInputFile } from '../utils/file';
 
-const input = readFileSync('src/day1/input.txt').toString();
+const input = readInputFile(1, 'input');
 const numbers = input.split('\n').filter(x => x.length > 0).map(Number);
 
 const fuelRequired = (mass: number): number => {

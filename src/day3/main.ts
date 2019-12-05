@@ -1,8 +1,6 @@
-import { readFileSync } from 'fs';
+import { readInputFile } from '../utils/file';
 
-const FILENAME = 'src/day3/input.txt';
-
-const inputLines = readFileSync(FILENAME).toString().trim().split('\n');
+const inputLines = readInputFile(3, 'input').split('\n');
 
 type Heading = 'U' | 'D' | 'R' | 'L';
 
