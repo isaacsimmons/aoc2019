@@ -10,7 +10,7 @@ const testInputs = (noun: number, verb: number): number => {
     memory[2] = verb;
     const computer = new Computer(memory, []);
     computer.run();
-    return computer.readMemory(0);
+    return computer.memory.read(0);
 }
 
 outer: for (let noun = 0; noun <= 99; noun++) {
