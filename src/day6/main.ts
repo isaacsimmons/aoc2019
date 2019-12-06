@@ -20,40 +20,64 @@ inputTuples.forEach(([parent, child]) => {
     }
 });
 
-// Build an ordered array such that every object has all of its children to its right
-let currentChildren = ['COM'];
-const orderedObjects: string[] = [];
-do {
-    orderedObjects.push(...currentChildren);
-    const newChildren = new Set<string>(currentChildren
-        .map(obj => orbitedBy.get(obj))
-        .map(s => s ? Array.from(s.values()): [])
-        .flat()
-    );
-    currentChildren = Array.from(newChildren.values());
-} while (currentChildren.length);
+// // Build an ordered array such that every object has all of its children to its right
+// let currentChildren = ['COM'];
+// const orderedObjects: string[] = [];
+// do {
+//     orderedObjects.push(...currentChildren);
+//     const newChildren = new Set<string>(currentChildren
+//         .map(obj => orbitedBy.get(obj))
+//         .map(s => s ? Array.from(s.values()): [])
+//         .flat()
+//     );
+//     currentChildren = Array.from(newChildren.values());
+// } while (currentChildren.length);
 
-// Count up all transitive children starting from the leaves
-const orbitCount = new Map<string, number>();
-for (const obj of orderedObjects) {
-    if (obj === 'COM') {
-        orbitCount.set(obj, 0);
-        continue;
-    }
+// // Count up all transitive children starting from the leaves
+// const orbitCount = new Map<string, number>();
+// for (const obj of orderedObjects) {
+//     if (obj === 'COM') {
+//         orbitCount.set(obj, 0);
+//         continue;
+//     }
 
-    const parent = orbits.get(obj);
-    if (parent === undefined) {
-        throw new Error(`Object ${obj} orbits nothing?`);
-    }
-    const parentCount = orbitCount.get(parent);
-    if (parentCount === undefined) {
-        throw new Error(`Tried to count orbits of ${obj}'s parent ${parent}, but that isn't stored`);
-    }
+//     const parent = orbits.get(obj);
+//     if (parent === undefined) {
+//         throw new Error(`Object ${obj} orbits nothing?`);
+//     }
+//     const parentCount = orbitCount.get(parent);
+//     if (parentCount === undefined) {
+//         throw new Error(`Tried to count orbits of ${obj}'s parent ${parent}, but that isn't stored`);
+//     }
 
-    orbitCount.set(obj, parentCount + 1);
+//     orbitCount.set(obj, parentCount + 1);
+// }
+
+// // console.log('counts', orbitCount);
+// const totalOrbits = Array.from(orbitCount.values()).reduce((sum, x) => sum + x);
+// console.log(totalOrbits);
+
+const myParents = new Set<string>();
+let obj: string|undefined = orbits.get('YOU');
+while (obj !== undefined) {
+    myParents.add(obj);
+    obj = orbits.get(obj);
+}
+console.log('myParents', myParents);
+
+let transfers = 0;
+
+let commonParent = orbits.get('SAN')!;
+while (!myParents.has(commonParent)) {
+    commonParent = orbits.get(commonParent)!;
+    transfers++;
+}
+console.log('commonParent', commonParent);
+
+let myParent = orbits.get('YOU')!;
+while(myParent !== commonParent) {
+    myParent = orbits.get(myParent)!;
+    transfers++;
 }
 
-// console.log('counts', orbitCount);
-const totalOrbits = Array.from(orbitCount.values()).reduce((sum, x) => sum + x);
-console.log(totalOrbits);
-
+console.log('transfers', transfers);
