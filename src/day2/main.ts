@@ -1,6 +1,5 @@
 import { readInputFile } from '../utils/file';
 import Computer from '../compute/Computer';
-import Memory from '../compute/Memory';
 
 const inputText = readInputFile(2, 'input');
 const program = inputText.split(',').map(Number);
@@ -9,9 +8,9 @@ const testInputs = (noun: number, verb: number): number => {
     const memory = [...program];
     memory[1] = noun;
     memory[2] = verb;
-    const computer = new Computer(new Memory(memory), []);
+    const computer = new Computer(memory, []);
     computer.run();
-    return computer.memory.read(0);
+    return computer.readMemory(0);
 }
 
 outer: for (let noun = 0; noun <= 99; noun++) {

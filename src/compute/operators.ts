@@ -13,10 +13,10 @@ const add: Operator = {
         if (m3 === 'immediate') {
             throw new Error('Tried to store result in immediate mode');
         }
-        const n1 = m1 === 'position' ? computer.memory.read(p1) : p1;
-        const n2 = m2 === 'position' ? computer.memory.read(p2): p2;
+        const n1 = m1 === 'position' ? computer.readMemory(p1) : p1;
+        const n2 = m2 === 'position' ? computer.readMemory(p2): p2;
         const result = n1 + n2;
-        computer.memory.write(idxStore, result);
+        computer.writeMemory(idxStore, result);
     },
 };
 
@@ -26,10 +26,10 @@ const multiply: Operator = {
         if (m3 === 'immediate') {
             throw new Error('Tried to store result in immediate mode');
         }
-        const n1 = m1 === 'position' ? computer.memory.read(p1) : p1;
-        const n2 = m2 === 'position' ? computer.memory.read(p2): p2;
+        const n1 = m1 === 'position' ? computer.readMemory(p1) : p1;
+        const n2 = m2 === 'position' ? computer.readMemory(p2): p2;
         const result = n1 * n2;
-        computer.memory.write(idxStore, result);
+        computer.writeMemory(idxStore, result);
     },
 };
 
@@ -40,14 +40,14 @@ const read: Operator = {
             throw new Error('Tried to read in immediate mode');
         }
         const val = computer.readInput();
-        computer.memory.write(idx, val);
+        computer.writeMemory(idx, val);
     },
 }
 
 const write: Operator = {
     numParams: 1,
     operate: ([p1], [mode], computer) => {
-        const val = mode === 'position' ? computer.memory.read(p1) : p1;
+        const val = mode === 'position' ? computer.readMemory(p1) : p1;
         computer.writeOutput(val);
     },
 }
@@ -62,11 +62,11 @@ const terminate: Operator = {
 const jumpTrue: Operator = {
     numParams: 2,
     operate: ([p1, p2], [m1, m2], computer) => {
-        const test = m1 === 'position' ? computer.memory.read(p1) : p1;
+        const test = m1 === 'position' ? computer.readMemory(p1) : p1;
         if (test === 0) {
             return;
         }
-        const jump = m2 === 'position' ? computer.memory.read(p2) : p2;
+        const jump = m2 === 'position' ? computer.readMemory(p2) : p2;
         computer.address = jump;
     },
 }
@@ -74,11 +74,11 @@ const jumpTrue: Operator = {
 const jumpFalse: Operator = {
     numParams: 2,
     operate: ([p1, p2], [m1, m2], computer) => {
-        const test = m1 === 'position' ? computer.memory.read(p1) : p1;
+        const test = m1 === 'position' ? computer.readMemory(p1) : p1;
         if (test !== 0) {
             return;
         }
-        const jump = m2 === 'position' ? computer.memory.read(p2) : p2;
+        const jump = m2 === 'position' ? computer.readMemory(p2) : p2;
         computer.address = jump;
     },
 }
@@ -89,10 +89,10 @@ const lessThan: Operator = {
         if (m3 === 'immediate') {
             throw new Error('Tried to store result in immediate mode');
         }
-        const n1 = m1 === 'position' ? computer.memory.read(p1) : p1;
-        const n2 = m2 === 'position' ? computer.memory.read(p2) : p2;
+        const n1 = m1 === 'position' ? computer.readMemory(p1) : p1;
+        const n2 = m2 === 'position' ? computer.readMemory(p2) : p2;
         const val = n1 < n2 ? 1 : 0;
-        computer.memory.write(idxStore, val);
+        computer.writeMemory(idxStore, val);
     },
 }
 
@@ -102,14 +102,12 @@ const equals: Operator = {
         if (m3 === 'immediate') {
             throw new Error('Tried to store result in immediate mode');
         }
-        const n1 = m1 === 'position' ? computer.memory.read(p1) : p1;
-        const n2 = m2 === 'position' ? computer.memory.read(p2) : p2;
+        const n1 = m1 === 'position' ? computer.readMemory(p1) : p1;
+        const n2 = m2 === 'position' ? computer.readMemory(p2) : p2;
         const val = n1 === n2 ? 1 : 0;
-        computer.memory.write(idxStore, val);
+        computer.writeMemory(idxStore, val);
     },
 }
-
-
 
 const AllOperators = new Map<number, Operator>([
     [1, add],
