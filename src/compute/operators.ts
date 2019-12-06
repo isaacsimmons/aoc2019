@@ -27,7 +27,7 @@ const read: Operator = {
         const val = cpu.readInput();
         cpu.writeMemory(p1, val);
     },
-}
+};
 
 const write: Operator = {
     numParams: 1,
@@ -35,7 +35,7 @@ const write: Operator = {
         const val = cpu.readMemory(p1);
         cpu.writeOutput(val);
     },
-}
+};
 
 const jumpTrue: Operator = {
     numParams: 2,
@@ -44,7 +44,7 @@ const jumpTrue: Operator = {
             cpu.address = cpu.readMemory(p2);
         }
     },
-}
+};
 
 const jumpFalse: Operator = {
     numParams: 2,
@@ -53,7 +53,7 @@ const jumpFalse: Operator = {
             cpu.address = cpu.readMemory(p2);
         }
     },
-}
+};
 
 const lessThan: Operator = {
     numParams: 3,
@@ -61,7 +61,7 @@ const lessThan: Operator = {
         const val = cpu.readMemory(p1) < cpu.readMemory(p2);
         cpu.writeMemory(p3, val ? 1 : 0);
     },
-}
+};
 
 const equals: Operator = {
     numParams: 3,
@@ -69,7 +69,7 @@ const equals: Operator = {
         const val = cpu.readMemory(p1) === cpu.readMemory(p2);
         cpu.writeMemory(p3, val ? 1 : 0);
     },
-}
+};
 
 const terminate: Operator = {
     numParams: 0,
