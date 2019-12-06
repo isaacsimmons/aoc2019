@@ -1,29 +1,41 @@
 import { parseOperator } from './operators';
+import Memory from './Memory';
+
+export type Mode = 'position' | 'immediate';
+export interface Parameter {
+    num: number;
+    mode: Mode;
+}
 
 export default class Computer {
     address: number = 0;
     terminated: boolean = false;
     readonly output: number[] = [];
     inputPosition = 0;
+    readonly memory: Memory;
 
-    constructor(readonly memory: number[], readonly input: number[]) {}
+    constructor(program: number[], readonly input: number[]) {
+        this.memory = new Memory(program);
+    }
 
     runStep() {
-        const opCode = this.readMemory(this.address);
+        const opCode = this.memory.read(this.address);
         const { operator, paramModes } = parseOperator(opCode);
         if (!operator) {
             throw new Error(`Unknown opCode ${opCode} at address ${this.address}`)
         }
 
-        const params = this.readManyMemory(this.address + 1, operator.numParams);
-        operator.operate(params, paramModes, this);
+        const paramValues = this.memory.readParams(this.address, operator.numParams);
+
+        const params = paramValues.map((value, idx):Parameter => ({num: value, mode: paramModes[idx]}));
+
+        operator.operate(params, this);
 
         // If we have overwritten the current instruction, leave the pointer where it is and don't advance
-        const newOpCode = this.readMemory(this.address);
+        const newOpCode = this.memory.read(this.address);
         if (newOpCode !== opCode) {
             return;
         }
-
         this.address += 1 + operator.numParams;
     }
 
@@ -44,25 +56,14 @@ export default class Computer {
         this.output.push(val);
     }
 
-    readMemory(address: number): number {
-        const val = this.memory[address];
-        if (val === undefined) {
-            throw new Error(`Out of bounds: Attempted to read from address ${address}`);
-        }
-        return val;
+    readMemory({num, mode}: Parameter) {
+        return mode === 'immediate' ? num : this.memory.read(num);
     }
 
-    writeMemory(address: number, val: number) {
-        if (address < 0 || address >= this.memory.length) {
-            throw new Error(`Out of bounds: Attempted to write to address ${address}`);
+    writeMemory({num, mode}: Parameter, val: number) {
+        if (mode === 'immediate') {
+            throw new Error('Tried to store result in immediate mode');
         }
-        this.memory[address] = val;
-    }
-
-    readManyMemory(address: number, length: number): number[] {
-        if (address < 0 || address > this.memory.length || length < 0 || address + length > this.memory.length) {
-            throw new Error(`Out of bounds: Attempted to read range from address ${address}:${length}`);
-        }
-        return this.memory.slice(address, address + length);
+        this.memory.write(num, val);
     }
 }
