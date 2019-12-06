@@ -24,9 +24,7 @@ export default class Computer {
         if (!operator) {
             throw new Error(`Unknown opCode ${opCode} at address ${this.address}`)
         }
-
         const paramValues = this.memory.readParams(this.address, operator.numParams);
-
         const params = paramValues.map((value, idx):Parameter => ({num: value, mode: paramModes[idx]}));
 
         operator.operate(params, this);
