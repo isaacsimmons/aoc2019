@@ -24,22 +24,16 @@ const feedback = (phaseSettings: number[]) => {
     let curr = 0;
     let next = 1;
     const computers = phaseSettings.map(phaseSetting => new Computer(memory, [phaseSetting]));
-
     computers[0].writeInput(signal);
-
     do {
         computers[curr].run();
-
         signal = computers[curr].readOutput();
         while (signal !== undefined) {
             computers[next].writeInput(signal);
             signal = computers[curr].readOutput();
         }
-        console.log(curr, computers[curr].terminated, computers[curr].paused);
-
         curr = next;
-        next++;
-        next %= computers.length;
+        next = (next + 1) % computers.length;
     } while (computers.map(computer => computer.terminated).filter(x => !x).length > 0);
     // console.log('done last', computers[4].output);
     return computers[4].output[computers[4].output.length - 1];
