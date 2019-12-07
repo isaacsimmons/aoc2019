@@ -10,8 +10,10 @@ export interface Parameter {
 export default class Computer {
     address: number = 0;
     terminated: boolean = false;
+    paused: boolean = false;
     readonly output: number[] = [];
     inputPosition = 0;
+    outputPosition = 0;
     readonly memory: Memory;
 
     constructor(program: number[], readonly input: number[]) {
@@ -29,6 +31,10 @@ export default class Computer {
 
         operator.operate(params, this);
 
+        if (this.paused) {
+            return;
+        }
+
         // If we have overwritten the current instruction, leave the pointer where it is and don't advance
         const newOpCode = this.memory.read(this.address);
         if (newOpCode !== opCode) {
@@ -38,16 +44,30 @@ export default class Computer {
     }
 
     run() {
-        while (!this.terminated) {
+        this.paused = false;
+        while (!this.terminated && !this.paused) {
             this.runStep();
         }
     }
 
     readInput() {
         if (this.inputPosition >= this.input.length) {
-            throw new Error('Tried to read past end of input');
+            this.paused = true;
+            return;
         }
         return this.input[this.inputPosition++];
+    }
+
+    writeInput(val: number) {
+        this.input.push(val);
+    }
+
+    readOutput() {
+        if (this.output.length > this.outputPosition) {
+            this.outputPosition++;
+            return this.output[this.outputPosition - 1];
+        }
+        return undefined;
     }
 
     writeOutput(val: number) {

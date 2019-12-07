@@ -25,6 +25,9 @@ const read: Operator = {
     numParams: 1,
     operate: ([p1], cpu) => {
         const val = cpu.readInput();
+        if (val === undefined) {
+            return;
+        }
         cpu.writeMemory(p1, val);
     },
 };

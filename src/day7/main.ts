@@ -4,7 +4,6 @@ import Computer from '../compute/Computer';
 const inputText = readInputFile(Number(process.env.DAY), process.env.FILE);
 const memory = inputText.split(',').map(s => s.trim()).filter(x => x.length > 0).map(Number);
 
-
 const amplify = (phaseSettings: number[]) => {
     let signal = 0;
     const a = new Computer(memory, [phaseSettings[0], signal]);
@@ -20,4 +19,63 @@ const amplify = (phaseSettings: number[]) => {
     return e.output[0];
 }
 
-console.log(amplify([1,0,4,3,2]));
+const feedback = (phaseSettings: number[]) => {
+    let signal: number|undefined = 0;
+    let curr = 0;
+    let next = 1;
+    const computers = phaseSettings.map(phaseSetting => new Computer(memory, [phaseSetting]));
+
+    computers[0].writeInput(signal);
+
+    do {
+        computers[curr].run();
+
+        signal = computers[curr].readOutput();
+        while (signal !== undefined) {
+            computers[next].writeInput(signal);
+            signal = computers[curr].readOutput();
+        }
+        console.log(curr, computers[curr].terminated, computers[curr].paused);
+
+        curr = next;
+        next++;
+        next %= computers.length;
+    } while (computers.map(computer => computer.terminated).filter(x => !x).length > 0);
+    // console.log('done last', computers[4].output);
+    return computers[4].output[computers[4].output.length - 1];
+}
+
+const permutator = (inputArr: number[]) => {
+    let result: number[][] = [];
+  
+    const permute = (arr: number[], m: number[] = []) => {
+      if (arr.length === 0) {
+        result.push(m)
+      } else {
+        for (let i = 0; i < arr.length; i++) {
+          let curr = arr.slice();
+          let next = curr.splice(i, 1);
+          permute(curr.slice(), m.concat(next))
+       }
+     }
+   }
+  
+   permute(inputArr)
+  
+   return result;
+}
+
+let max = 0;
+let bestPermutation: number[]|undefined;
+const permutations = permutator([5,6,7,8,9]);
+for (const permutation of permutations) {
+    const output = feedback(permutation);
+    if (output > max) {
+        max = output;
+        bestPermutation = permutation;
+    }
+}
+console.log(max, bestPermutation);
+
+// console.log(feedback([9,8,7,6,5]));
+
