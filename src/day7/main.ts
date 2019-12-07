@@ -59,17 +59,12 @@ const permutator = (inputArr: number[]) => {
    return result;
 }
 
-let max = 0;
-let bestPermutation: number[]|undefined;
-const permutations = permutator([5,6,7,8,9]);
-for (const permutation of permutations) {
-    const output = feedback(permutation);
-    if (output > max) {
-        max = output;
-        bestPermutation = permutation;
-    }
+const findMaxPermutation = (inputs: number[], runner: (params: number[]) => number) => {
+    const permutations = permutator(inputs);
+    return Math.max(...permutations.map(runner));
 }
-console.log(max, bestPermutation);
+
+console.log(findMaxPermutation([5,6,7,8,9], feedback));
 
 // console.log(feedback([9,8,7,6,5]));
 
