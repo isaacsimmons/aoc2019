@@ -1,8 +1,14 @@
 import Computer, { Parameter, Mode } from "./Computer";
 
+export interface OperatorResult {
+    terminate?: true;
+    writeAddresses?: number[];
+    newAddress?: number;
+}
+
 export interface Operator {
     numParams: number;
-    operate: (params: Parameter[], computer: Computer) => Promise<void>;
+    operate: (params: Parameter[], computer: Computer) => Promise<OperatorResult>;
 }
 
 const add: Operator = {
@@ -10,6 +16,7 @@ const add: Operator = {
     operate: async ([p1, p2, p3], cpu) => {
         const result = cpu.memory.read(p1) + cpu.memory.read(p2);
         cpu.memory.write(p3, result);
+        return { writeAddresses: [p3.num] };
     },
 };
 
@@ -18,6 +25,7 @@ const multiply: Operator = {
     operate: async ([p1, p2, p3], cpu) => {
         const result = cpu.memory.read(p1) * cpu.memory.read(p2);
         cpu.memory.write(p3, result);
+        return { writeAddresses: [p3.num] };
     },
 };
 
@@ -25,6 +33,7 @@ const read: Operator = {
     numParams: 1,
     operate: async ([p1], cpu) => {
         cpu.memory.write(p1, await cpu.readInput());
+        return {};
     },
 };
 
@@ -32,6 +41,7 @@ const write: Operator = {
     numParams: 1,
     operate: async ([p1], cpu) => {
         cpu.output.write(cpu.memory.read(p1));
+        return {};
     },
 };
 
@@ -39,8 +49,9 @@ const jumpTrue: Operator = {
     numParams: 2,
     operate: async ([p1, p2], cpu) => {
         if (cpu.memory.read(p1) !== 0) {
-            cpu.address = cpu.memory.read(p2);
+            return { newAddress: cpu.memory.read(p2) };
         }
+        return {};
     },
 };
 
@@ -48,8 +59,9 @@ const jumpFalse: Operator = {
     numParams: 2,
     operate: async ([p1, p2], cpu) => {
         if (cpu.memory.read(p1) === 0) {
-            cpu.address = cpu.memory.read(p2);
+            return { newAddress: cpu.memory.read(p2) };
         }
+        return {};
     },
 };
 
@@ -58,6 +70,7 @@ const lessThan: Operator = {
     operate: async ([p1, p2, p3], cpu) => {
         const val = cpu.memory.read(p1) < cpu.memory.read(p2);
         cpu.memory.write(p3, val ? 1 : 0);
+        return { writeAddresses: [p3.num] };
     },
 };
 
@@ -66,14 +79,14 @@ const equals: Operator = {
     operate: async ([p1, p2, p3], cpu) => {
         const val = cpu.memory.read(p1) === cpu.memory.read(p2);
         cpu.memory.write(p3, val ? 1 : 0);
+        return { writeAddresses: [p3.num] };
     },
 };
 
 const terminate: Operator = {
     numParams: 0,
-    operate: async (_params, cpu) => {
-        cpu.terminated = true;
-        cpu.output.close();
+    operate: async (_params, _cpu) => {
+        return { terminate: true };
     },
 };
 

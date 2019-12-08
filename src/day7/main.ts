@@ -5,46 +5,44 @@ const inputText = readInputFile(Number(process.env.DAY), process.env.FILE);
 const memory = inputText.split(',').map(s => s.trim()).filter(x => x.length > 0).map(Number);
 
 const amplify = async (phaseSettings: number[]) => {
-    const a = new Computer(memory, [phaseSettings[0], 0]);
-    const b = new Computer(memory, [phaseSettings[1]], a.output);
-    const c = new Computer(memory, [phaseSettings[2]], b.output);
-    const d = new Computer(memory, [phaseSettings[3]], c.output);
-    const e = new Computer(memory, [phaseSettings[4]], d.output);
+  const computers = phaseSettings.map(phaseSetting => new Computer(memory, [phaseSetting]));
+  computers[0].inputSeed.write(0);
+  computers[1].input = computers[0].output;
+  computers[2].input = computers[1].output;
+  computers[3].input = computers[2].output;
+  computers[4].input = computers[3].output;
 
-    a.run();
-    b.run();
-    c.run();
-    d.run();
-    e.run();
+  computers.forEach(computer => computer.run());
 
-    return await e.output.read();
+  return await computers[4].output.read();
 }
 
-const feedback = (phaseSettings: number[]) => {
-    // let signal: number|undefined = 0;
-    // let curr = 0;
-    // let next = 1;
+const feedback = async (phaseSettings: number[]) => {
     // // Make a batch of 5 computers from the same memory
-    // const computers = phaseSettings.map(phaseSetting => new Computer(memory));
-    // for (let curr = 0; i < 5; i++) {
-    //   next = (curr + i) % 5;
-    //   computers[next].input = mergeIncomputers[curr].readOutput;
-    // }
+    const computers = phaseSettings.map(phaseSetting => new Computer(memory, [phaseSetting]));
+    for (let curr = 0; curr < 5; curr++) {
+      const next = (curr + 1) % 5;
+      computers[next].input = computers[curr].output;
+    }
 
+    // Seed the input of the first with an additional value
+    computers[0].inputSeed.write(0);
 
-    // computers[0].writeInput(signal);
-    // do {
-    //     computers[curr].run();
-    //     signal = computers[curr].readOutput();
-    //     while (signal !== undefined) {
-    //         computers[next].writeInput(signal);
-    //         signal = computers[curr].readOutput();
-    //     }
-    //     curr = next;
-    //     next = (next + 1) % computers.length;
-    // } while (computers.map(computer => computer.terminated).filter(x => !x).length > 0);
-    // // console.log('done last', computers[4].output);
-    // return computers[4].output[computers[4].output.length - 1];
+    // Setup a loop to wait for all computers to terminate before returning
+    const p = new Promise<number>((resolve, _reject) => {
+      const waiting = setInterval(() => {
+        const terminationStatuses = computers.map(computer => computer.terminated);
+        if (!terminationStatuses.includes(false)) {
+          clearInterval(waiting);
+          resolve(computers[4].output.readSync());
+        }
+      }, 0);
+    });
+
+    // Start all of the computers
+    computers.forEach(computer => computer.run());
+
+    return p;
 }
 
 const permutator = (inputArr: number[]) => {
@@ -67,15 +65,16 @@ const permutator = (inputArr: number[]) => {
    return result;
 }
 
-const findMaxPermutation = (inputs: number[], runner: (params: number[]) => number) => {
+const findMaxPermutation = async (inputs: number[], runner: (params: number[]) => Promise<number>) => {
     const permutations = permutator(inputs);
-    return Math.max(...permutations.map(runner));
+    const promises = permutations.map(runner);
+    const results = await Promise.all(promises);
+    return Math.max(...results);
 }
 
-amplify([0,1,2,3,4]).then(x => { console.log('done', x); }).catch(x => { console.log('err', x); }).finally(() => console.log('fin'));
+// amplify([0,1,2,3,4]).then(x => { console.log('done', x); }).catch(x => { console.log('err', x); }).finally(() => console.log('fin'));
 
 // console.log(findMaxPermutation([5,6,7,8,9], feedback));
-// console.log(findMaxPermutation([5,6,7,8,9], feedback));
 
-// console.log(feedback([9,8,7,6,5]));
-
+// feedback([9,8,7,6,5]).then(x => { console.log('done', x); }).catch(x => { console.log('err', x); }).finally(() => console.log('fin'));
+findMaxPermutation([5,6,7,8,9], feedback).then(x => { console.log('done', x); }).catch(x => { console.log('err', x); }).finally(() => console.log('fin'));
