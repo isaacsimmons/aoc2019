@@ -1,4 +1,5 @@
 import { equal } from "assert";
+import { equals } from "../utils/array";
 
 const MIN = 273025;
 const MAX = 767253;
@@ -50,8 +51,6 @@ const makeAscending = (d: Digits) => {
 
 // Increment an already ascending set of digits to the next highest value
 const incD = (d: Digits, max: Digits): boolean => {
-    // TODO: pass an optional max here? (unless its just going to be exactly the same as doing the compares manually)
-
     // Scan the number from least significant to most significant looking for a number that we can increment
     let i = d.length - 1;
     let changedValue = d[i];
@@ -91,38 +90,39 @@ const incB = (d: Buckets, max: Buckets): boolean => {
     // Scan the number from least significant to most significant looking for a number that we can increment
 
     // Find the first non-9 value and we can increment that
-    for (let i = 8; i >= 1; i++) {
-        if (i > 0) {
+    for (let i = 8; i >= 1; i--) {
+        if (d[i] > 0) {
             d[i]--;
             d[i+1]++;
             if (i !== 8) {
                 d[i+1] += d[9];
                 d[9] = 0;
             }
-            return true;
+            return equals(d, max);
         }
     }
 
     // Wrap around to adding another digit, start at all 1's
     d[1] = d[9] + 1;
     d[9] = 0;
-    return true;
+    return equals(d, max);
 }
 
+const hasPair = (b: Buckets) => b.some(d => d === 2);
 
 const dx = ntod(MIN);
 makeAscending(dx);
+const bx = dtob(dx);
 
 const dmax = ntod(MAX + 1); // We're using a non-inclusive MAX, but the inputs specify inclusive, so add one to it
 makeAscending(dmax); // TODO: should this be baked into ntod()?
+const bmax = dtob(dmax);
 
-let numPasswords = 1;
-while(true) {
-    const done = incD(dx, dmax);
-    if (done) {
-        break;
+let numPasswords = 0;
+do {
+    if (hasPair(bx)) {
+        numPasswords++;
     }
-    numPasswords++;
-    // console.log(dx);
-}
+} while (!incB(bx, bmax));
+
 console.log(numPasswords);

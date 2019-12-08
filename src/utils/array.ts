@@ -82,3 +82,5 @@ export const minIndex = <T>(arr: T[]) => {
     }
     return result;
 };
+
+export const equals = <T>(arr1: T[], arr2: T[]) => arr1.length == arr2.length && arr1.every((val,idx) => val === arr2[idx]);
