@@ -1,4 +1,5 @@
 import { equals } from "../utils/array";
+import { filtered } from "../utils/generator";
 
 const MIN = 273025;
 const MAX = 767253;
@@ -55,19 +56,13 @@ const incB = (b: Buckets, max: Buckets): boolean => {
 
 const hasPair = (b: Buckets) => b.some(d => d === 2);
 
-
 const ascending = function *ascending(min: number, max: number) {
     const x = bukkit(min);
     const maxB = bukkit(max + 1); // We're using a non-inclusive MAX, so add 1
     do {
         yield x;
     } while (!incB(x, maxB));
-}
+};
 
-let numPasswords = 0;
-for(const b of ascending(MIN, MAX)) {
-    if (hasPair(b)) {
-        numPasswords++;
-    }
-}
-console.log(numPasswords);
+const passwords = filtered(ascending(MIN, MAX), hasPair);
+console.log([...passwords].length);
