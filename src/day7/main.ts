@@ -17,7 +17,7 @@ const amplify = async (phaseSettings: number[]) => {
     d.run();
     e.run();
 
-    return await e.readOutput();
+    return await e.output.read();
 }
 
 const feedback = (phaseSettings: number[]) => {

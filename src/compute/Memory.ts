@@ -1,3 +1,5 @@
+import { Parameter } from "./Computer";
+
 export default class Memory {
     readonly memory: number[];
 
@@ -5,19 +7,26 @@ export default class Memory {
         this.memory = [...memory];
     }
 
-    read(address: number): number {
-        const val = this.memory[address];
+    read({num, mode}: Parameter): number {
+        if (mode === 'immediate') {
+            return num;
+        }
+
+        const val = this.memory[num];
         if (val === undefined) {
-            throw new Error(`Out of bounds: Attempted to read from address ${address}`);
+            throw new Error(`Out of bounds: Attempted to read from address ${num}`);
         }
         return val;
     }
 
-    write(address: number, val: number) {
-        if (address < 0 || address >= this.memory.length) {
-            throw new Error(`Out of bounds: Attempted to write to address ${address}`);
+    write({num, mode}: Parameter, val: number) {
+        if (mode === 'immediate') {
+            throw new Error('Tried to store result in immediate mode');
         }
-        this.memory[address] = val;
+        if (num < 0 || num >= this.memory.length) {
+            throw new Error(`Out of bounds: Attempted to write to address ${num}`);
+        }
+        this.memory[num] = val;
     }
 
     readParams(address: number, length: number): number[] {

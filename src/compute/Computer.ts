@@ -27,7 +27,7 @@ export default class Computer {
     }
 
     async runStep() {
-        const opCode = this.memory.read(this.address);
+        const opCode = this.memory.read({ num: this.address, mode: 'position' });
         const { operator, paramModes } = parseOperator(opCode);
         if (!operator) {
             throw new Error(`Unknown opCode ${opCode} at address ${this.address}`)
@@ -39,7 +39,7 @@ export default class Computer {
 
         // If we have overwritten the current instruction, leave the pointer where it is and don't advance
         // TODO: use lastWriteAddress instead (actually, that should just be a return value from operate())
-        const newOpCode = this.memory.read(this.address);
+        const newOpCode = this.memory.read({ num: this.address, mode: 'position' });
         if (newOpCode !== opCode) {
             return;
         }
@@ -62,28 +62,5 @@ export default class Computer {
         while(!this.terminated) {
             await this.runStep();
         }
-    }
-
-    async readOutput() {
-        // TODO: remove this function?
-        return this.output.read();
-    }
-
-    writeOutput(val: number) {
-        // TODO: remove this function?
-        this.output.write(val);
-    }
-
-    readMemory({num, mode}: Parameter) {
-        // TODO: push this param logic into Memory?
-        return mode === 'immediate' ? num : this.memory.read(num);
-    }
-
-    writeMemory({num, mode}: Parameter, val: number) {
-        // TODO: push this param logic into Memory?
-        if (mode === 'immediate') {
-            throw new Error('Tried to store result in immediate mode');
-        }
-        this.memory.write(num, val);
     }
 }
