@@ -1,5 +1,6 @@
 import { readInputFile } from '../utils/file';
 import Computer from '../compute/Computer';
+import { permute } from '../utils/array';
 
 const inputText = readInputFile(Number(process.env.DAY), process.env.FILE);
 const memory = inputText.split(',').map(s => s.trim()).filter(x => x.length > 0).map(Number);
@@ -45,28 +46,8 @@ const feedback = async (phaseSettings: number[]) => {
     return p;
 }
 
-const permutator = (inputArr: number[]) => {
-    let result: number[][] = [];
-  
-    const permute = (arr: number[], m: number[] = []) => {
-      if (arr.length === 0) {
-        result.push(m)
-      } else {
-        for (let i = 0; i < arr.length; i++) {
-          let curr = arr.slice();
-          let next = curr.splice(i, 1);
-          permute(curr.slice(), m.concat(next))
-       }
-     }
-   }
-  
-   permute(inputArr)
-  
-   return result;
-}
-
 const findMaxPermutation = async (inputs: number[], runner: (params: number[]) => Promise<number>) => {
-    const permutations = permutator(inputs);
+    const permutations = permute(inputs);
     const promises = permutations.map(runner);
     const results = await Promise.all(promises);
     return Math.max(...results);
