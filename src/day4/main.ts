@@ -1,5 +1,8 @@
+import { equal } from "assert";
+
 const MIN = 273025;
 const MAX = 767253;
+//const MAX = 289998;
 
 // The "0" element is technically wasted since "ascending" numbers will never have zeroes in them
 // TODO: keep track of max and min digit as well as count of digits
@@ -58,12 +61,27 @@ const incD = (d: Digits, max: Digits): boolean => {
     }
 
     // Perform the increment (to the selected digit and every one to the right)
+    let equalsMax = true;
     changedValue++;
-    for (; i < d.length; i++) {
-        d[i] = changedValue;
+    for (let j = i; j < d.length; j++) {
+        d[j] = changedValue;
+        if (changedValue !== max[j]) {
+            equalsMax = false;
+        }
     }
 
-    // Given that the previous number was less than the max, we only need to look at changed values
+    // If any of the digits we already looked at differ from the max
+    if (!equalsMax) {
+        return false;
+    }
+    // ... or any of the digits we didnt' modify differ from the max
+    for (let j = i - 1; j >= 0; j--) {
+        if (d[j] !== max[j]) {
+            // Then the new value isn't the max
+            return false;
+        }
+    }
+    // Otherwise it must now equal the max value (awful lot of extra logic to avoid comparing two tiny arrays)
     return true;
 }
 
@@ -92,11 +110,19 @@ const incB = (d: Buckets, max: Buckets): boolean => {
 }
 
 
-const dx = toDigits(MIN);
-console.log(dx);
+const dx = ntod(MIN);
 makeAscending(dx);
-console.log(dx);
-for (let x = 0; x < 30; x++) {
-    incAscending(dx);
-    console.log(dx);
+
+const dmax = ntod(MAX + 1); // We're using a non-inclusive MAX, but the inputs specify inclusive, so add one to it
+makeAscending(dmax); // TODO: should this be baked into ntod()?
+
+let numPasswords = 1;
+while(true) {
+    const done = incD(dx, dmax);
+    if (done) {
+        break;
+    }
+    numPasswords++;
+    // console.log(dx);
 }
+console.log(numPasswords);
