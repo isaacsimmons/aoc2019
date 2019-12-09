@@ -14,21 +14,20 @@ const bukkit = (n: number): Buckets => {
     const b = [...EMPTY_BUCKETS] as Buckets;
 
     // Split the number into digits
-    const d = String(n).split('').map(Number);
+    const digits = String(n).split('').map(Number);
 
     // Round up to the nearest ascending value while bucketing digits
     let min = 0;
-    d.forEach((n, idx) => {
-        if (n < min) {
-            d[idx] = min;
+    digits.forEach(digit => {
+        if (digit < min) {
             b[min]++;
         } else {
-            min = n;
-            b[n]++;
+            min = digit;
+            b[digit]++;
         }
     });
     return b;
-}
+};
 
 // Increment an already ascending set of digits to the next highest value
 const incB = (b: Buckets, max: Buckets): boolean => {
