@@ -2,7 +2,7 @@ import { parseOperator } from './operators';
 import Memory from './Memory';
 import Buffer from './Buffer';
 
-export type Mode = 'position' | 'immediate';
+export type Mode = 'position' | 'immediate' | 'relative';
 export interface Parameter {
     num: number;
     mode: Mode;
@@ -35,11 +35,15 @@ export default class Computer {
         const params = paramValues.map((value, idx):Parameter => ({num: value, mode: paramModes[idx]}));
 
         // Run the current operator
-        const { terminate, newAddress, writeAddresses } = await operator.operate(params, this);
+        const { changeBase, terminate, newAddress, writeAddresses } = await operator.operate(params, this);
  
         if (terminate) {
             this.terminated = true;
             this.output.close();
+        }
+
+        if (changeBase) {
+            this.memory.changeBase(changeBase);
         }
 
         // If we overwrote our current instruction, skip the usual advancement of the instruction pointer
@@ -51,6 +55,11 @@ export default class Computer {
         if (newAddress !== undefined) {
             this.address = newAddress;
         }
+
+        // console.log('mem', this.memory.memory);
+        // console.log('addr', this.address);
+        // console.log('out', this.output.buff);
+        // console.log('rb', this.memory.relativeBase);
     }
 
     async readInput() {

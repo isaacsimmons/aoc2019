@@ -4,6 +4,7 @@ export interface OperatorResult {
     terminate?: true;
     writeAddresses?: number[];
     newAddress?: number;
+    changeBase?: number;
 }
 
 export interface Operator {
@@ -83,6 +84,14 @@ const equals: Operator = {
     },
 };
 
+const adjustBase: Operator = {
+    numParams: 1,
+    operate: async ([p1], cpu) => {
+        const val = cpu.memory.read(p1);
+        return { changeBase: val };
+    },
+};
+
 const terminate: Operator = {
     numParams: 0,
     operate: async (_params, _cpu) => {
@@ -99,6 +108,7 @@ const AllOperators = new Map<number, Operator>([
     [6, jumpFalse],
     [7, lessThan],
     [8, equals],
+    [9, adjustBase],
     [99, terminate],
 ]);
 
@@ -120,6 +130,9 @@ export const parseOperator = (opCode: number): {operator: Operator; paramModes: 
                 break;
             case 1:
                 paramModes.push('immediate');
+                break;
+            case 2:
+                paramModes.push('relative');
                 break;
             default:
                 throw new Error(`Unexpected parameter mode found in ${opCode}`);
