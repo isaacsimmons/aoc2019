@@ -34,7 +34,7 @@ const read: Operator = {
     numParams: 1,
     operate: async ([p1], cpu) => {
         cpu.memory.write(p1, await cpu.readInput());
-        return {};
+        return { writeAddresses: [p1.num] };
     },
 };
 

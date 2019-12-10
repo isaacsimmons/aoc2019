@@ -2,16 +2,16 @@ import { parseOperator } from './operators';
 import Memory from './Memory';
 import Buffer from './Buffer';
 
+export type Status = 'init' | 'running' | 'terminated';
 export type Mode = 'position' | 'immediate' | 'relative';
 export interface Parameter {
     num: number;
     mode: Mode;
 }
-// export type State = 'init' | 'running' | 'terminated'; // TODO: replace this.terminated with a "state" instead?
 
 export default class Computer {
     address: number = 0;
-    terminated: boolean = false;
+    status: Status = 'init';
 
     readonly output = new Buffer<number>();
     readonly inputSeed = new Buffer<number>();
@@ -26,6 +26,10 @@ export default class Computer {
     }
 
     async runStep() {
+        if (this.status !== 'running') {
+            throw new Error('Tried to runStep() when not in running state');
+        }
+
         const opCode = this.memory.read({ num: this.address, mode: 'position' });
         const { operator, paramModes } = parseOperator(opCode);
         if (!operator) {
@@ -36,10 +40,11 @@ export default class Computer {
 
         // Run the current operator
         const { changeBase, terminate, newAddress, writeAddresses } = await operator.operate(params, this);
+        // TODO: just let the operator mess with the computer directly?
  
         if (terminate) {
-            this.terminated = true;
             this.output.close();
+            return 'terminated';
         }
 
         if (changeBase) {
@@ -55,11 +60,7 @@ export default class Computer {
         if (newAddress !== undefined) {
             this.address = newAddress;
         }
-
-        // console.log('mem', this.memory.memory);
-        // console.log('addr', this.address);
-        // console.log('out', this.output.buff);
-        // console.log('rb', this.memory.relativeBase);
+        return 'running';
     }
 
     async readInput() {
@@ -75,8 +76,12 @@ export default class Computer {
     }
 
     async run() {
-        while(!this.terminated) {
-            await this.runStep();
+        if (this.status !== 'init') {
+            throw new Error('Called run multiple times on computer');
+        }
+        this.status = 'running';
+        while(this.status !== 'terminated') {
+            this.status = await this.runStep();
         }
     }
 }
