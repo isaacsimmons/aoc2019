@@ -15,10 +15,7 @@ export default class Buffer<T> {
     }
 
     close() {
-        this.closed = false;
-        if (this.hasData) {
-            console.warn('Closed buffer with unread data');
-        }
+        this.closed = true;
         this.pendingReads.forEach(pendingRead => pendingRead.reject(new Error('Tried to read past end of buffer')));
     }
 
@@ -61,6 +58,15 @@ export default class Buffer<T> {
         while (this.pendingReads.length && this.hasData) {
             this.pendingReads.shift()!.resolve(this.readSync());
         }
+    }
+
+    flush(): T[] {
+        if (!this.closed) {
+            throw new Error('Tried to flush a non-closed buffer');
+        }
+        const vals = this.buff.slice(this.position);
+        this.position = this.buff.length;
+        return vals;
     }
 
     // TODO: a write batch method?

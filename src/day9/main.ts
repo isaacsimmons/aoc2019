@@ -1,5 +1,6 @@
 import { readInputFile } from '../utils/file';
 import Computer from '../compute/Computer';
+import Cluster from '../compute/Cluster';
 
 const inputText = readInputFile(Number(process.env.DAY), process.env.FILE);
 const program = inputText.trim().split(',').map(Number);
@@ -15,16 +16,9 @@ const computer = new Computer(program, [2]);
 
 const run = async () => {
     computer.run();
-    while (true) {
-        try {
-            const result = await computer.output.read();
-            // TODO: a "gentle" readAll() method on output
-            console.log('answer', result);
-        } catch (e) {
-            console.log((e as Error).message);
-            break;
-        }
-    }
+    const cluster = new Cluster([computer]);
+    await cluster.awaitAllTerminated();
+    console.log('answer', computer.output.flush());
 };
 
 run();
