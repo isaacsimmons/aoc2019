@@ -32,41 +32,110 @@ const gcd = (x: number, y: number) => {
     return x;
 };
 
-const scoreLocation = (originX: number, originY: number) => {
-    const headings = new Set<string>();
-    // console.log('checking', originX, originY);
-    if (grid[originY][originX] !== '#') {
-        return 0;
-    }
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-            if (grid[y][x] === '#') {
-                const dx = x - originX;
-                const dy = y - originY;
-                const dGCD = gcd(dx, dy);
-                const key = `${dx / dGCD}_${dy / dGCD}`;
-                // console.log('seen', key);
-                headings.add(key);
+interface Intercept {
+    targetX: number;
+    targetY: number;
+    dx: number;
+    dy: number;
+    dxReduced: number;
+    dyReduced: number;
+    heading: number;
+    key: string;
+    gcd: number;
+}
+
+const stationX = 23;
+const stationY = 20;
+// const stationX = 11;
+// const stationY = 13;
+
+const headings = new Map<string, Intercept[]>();
+// console.log('checking', originX, originY);
+for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) {
+        if (grid[y][x] === '#') {
+            const dx = x - stationX;
+            const dy = y - stationY;
+            const dGCD = gcd(dx, dy);
+            const dxReduced = dx / dGCD;
+            const dyReduced = dy / dGCD;
+            const key = `${dxReduced}_${dyReduced}`;
+            const heading = Math.atan2(dxReduced, dyReduced);
+            const h: Intercept = {
+                targetX: x,
+                targetY: y,
+                dx,
+                dy,
+                dxReduced,
+                dyReduced,
+                heading,
+                key,
+                gcd: dGCD,
+            };
+            const match = headings.get(key);
+            if (match) {
+                match.push(h);
+            } else {
+                headings.set(key, [h]);
             }
         }
     }
-    // console.log('done with', headings.size);
-    return headings.size - 1; // Ignore the 0_0 entry
-};
+}
+headings.delete('0_0'); // Ignore own coords
 
-for (let x = 0; x < width; x++) {
-    for (let y = 0; y < height; y++) {
-        scores[y][x] = scoreLocation(x, y);
+console.log(headings);
+
+const sorted = [...headings.keys()].sort((keyA, keyB) => {
+    const headingA = headings.get(keyA)![0].heading;
+    const headingB = headings.get(keyB)![0].heading;
+    return headingB - headingA;
+});
+
+console.log(sorted);
+
+const vaporized = [];
+
+while (headings.size > 0) {
+    for (const key of sorted) {
+        const match = headings.get(key);
+        if (!match) {
+            continue;
+        }
+        if (match.length === 1) {
+            vaporized.push(match[0]);
+            headings.delete(key);
+            continue;
+        }
+        // find lowest GCD, pluck that one out
+        const lowestGCD = Math.min(...match.map(h => h.gcd));
+        const lowestIndex = match.findIndex((value) => value.gcd === lowestGCD);
+        vaporized.push(match[lowestIndex]);
+        match.splice(lowestIndex, 1);
     }
 }
+
+console.log(vaporized[0]);
+console.log(vaporized[1]);
+console.log(vaporized[2]);
+console.log(vaporized[199]);
+
+
+
+// for (let x = 0; x < width; x++) {
+//     for (let y = 0; y < height; y++) {
+//         scores[y][x] = scoreLocation(x, y);
+//     }
+// }
 // scores[3][3] = scoreLocation(3, 3);
 
-const maxScore = () => {
-    return Math.max(...scores.map(row => Math.max(...row)));
-}
+// const maxScore = () => {
+//     return Math.max(...scores.map(row => Math.max(...row)));
+// }
 
+// x 11, y 13
 
+// current picks 10, 13
 
 // console.log(grid);
 // console.log(scores);
-console.log(maxScore());
+// console.log(maxScore());
