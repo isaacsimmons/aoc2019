@@ -119,8 +119,6 @@ console.log(vaporized[1]);
 console.log(vaporized[2]);
 console.log(vaporized[199]);
 
-
-
 // for (let x = 0; x < width; x++) {
 //     for (let y = 0; y < height; y++) {
 //         scores[y][x] = scoreLocation(x, y);
