@@ -49,7 +49,7 @@ const goRun = async () => {
     computer.run();
     do {
         const key = `${x}_${y}`;
-        const inputValue = whitePanels.has(key) ? 0 : 1;
+        const inputValue = whitePanels.has(key) ? 1 : 0;
         input.write(inputValue);
     
         // Paint current square
@@ -87,7 +87,7 @@ const goRun = async () => {
             throw new Error('Unexpected turn command');
         }
 
-        console.log(`(${x}, ${y}) paint ${colorToPaint === 1 ? 'white' : 'black'}, turn ${directionToTurn === 0 ? 'left' : 'right'}, facing ${heading}`)
+        // console.log(`(${x}, ${y}) paint ${colorToPaint === 1 ? 'white' : 'black'}, turn ${directionToTurn === 0 ? 'left' : 'right'}, facing ${heading}`)
     
         // Advance a space
         switch (heading) {
@@ -106,7 +106,7 @@ const goRun = async () => {
         }
         console.log(paintedPanels.size);
     } while (computer.status !== 'terminated');
-    console.log('final', whitePanels);
+//    console.log('final', whitePanels);
 }
 
 
