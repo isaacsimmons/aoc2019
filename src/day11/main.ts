@@ -1,6 +1,7 @@
 import { readInputFile } from '../utils/file';
 import Computer from '../compute/Computer';
 import Buffer from '../compute/Buffer';
+import Layer from '../image/Layer';
 
 const inputText = readInputFile(Number(process.env.DAY), process.env.FILE);
 const program = inputText.trim().split(',').map(Number);
@@ -41,9 +42,10 @@ let y = 0;
 const whitePanels = new Set<string>();
 const paintedPanels = new Set<string>();
 
+whitePanels.add('0_0');
+
 const input = new Buffer<number>();
 computer.input = input;
-
 
 const goRun = async () => {
     computer.run();
@@ -104,10 +106,28 @@ const goRun = async () => {
                 x--;
                 break;
         }
-        console.log(paintedPanels.size);
+        // console.log(paintedPanels.size);
     } while (computer.status !== 'terminated');
 //    console.log('final', whitePanels);
+
+  const tmp = [...whitePanels.keys()].map(s => s.split('_').map(Number));
+  const xs = tmp.map(coord => coord[0]);
+  const ys = tmp.map(coord => coord[1]);
+  const minx = Math.min(...xs);
+  const maxx = Math.max(...xs);
+  const miny = Math.min(...ys);
+  const maxy = Math.max(...ys);
+  const width = maxx - minx + 1;
+  const height = maxy - miny + 1;
+  const l = new Layer({x: maxx - minx + 1, y: maxy - miny + 1}, Array(width * height).fill('0'));
+  tmp.forEach((coords) => {
+      const adjustedX = coords[0] - minx;
+      const adjustedY = coords[1] - miny;
+      l.pixels[adjustedX + adjustedY * width] = '1'
+    });
+  l.print();
 }
+
 
 
 goRun();
