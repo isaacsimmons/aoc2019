@@ -15,7 +15,7 @@ for (let y = 0; y < height; y++) {
 
 // Note: Grid[y][x]
 
-const gcd = (x: number, y: number) => {
+export const gcd = (x: number, y: number) => {
     x = Math.abs(x);
     y = Math.abs(y);
     if (x === 0) {
