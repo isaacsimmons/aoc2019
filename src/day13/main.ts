@@ -1,7 +1,7 @@
 import { readInputFile } from '../utils/file';
 import Computer from '../compute/Computer';
 import Buffer from '../compute/Buffer';
-import Layer from '../image/Layer';
+import Image from '../image/Image';
 import Dimensions from '../image/Dimensions';
 import { chunk } from '../utils/array';
 import { BREAKOUT_BOARD } from '../image/colors';
@@ -15,7 +15,7 @@ computer.input = new Buffer();
 
 interface GameState {
     score: number;
-    screen: Layer;
+    screen: Image<number>;
     ballAt: Dimensions;
     paddleAt: Dimensions;
 }
@@ -23,9 +23,9 @@ interface GameState {
 const go = async () => {
     const state: GameState = {
         score: 0,
-        paddleAt: {x: 0, y: 0},
-        ballAt: {x: 0, y: 0},
-        screen: Layer.init(40, 20),
+        paddleAt: { x: 0, y: 0 },
+        ballAt: { x: 0, y: 0 },
+        screen: Image.init<number>(40, 20, 0, BREAKOUT_BOARD),
     };
 
     while (true) {
@@ -46,11 +46,11 @@ const go = async () => {
             } else if (value === 4) {
                 state.ballAt = { x, y };
             }
-            state.screen.setValue(x, y, String(value));
+            state.screen.setValue(x, y, value);
         });
 
         console.log('score', state.score);
-        state.screen.print(BREAKOUT_BOARD); // TODO: make the formatter a property of the Layer
+        state.screen.print();
 
         let direction = 0;
         if (state.paddleAt.x > state.ballAt.x) {
@@ -71,9 +71,5 @@ const go = async () => {
         }
     }
 };
-
-// Max X = 36
-// Max Y = 19
-// Make the screen uh, 37x20? 40x20? 40x40?
 
 go();

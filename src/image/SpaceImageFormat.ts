@@ -1,6 +1,7 @@
 import Image from "./Image";
 import { chunk } from "../utils/array";
 import Dimensions from "./Dimensions";
+import { BLACK_AND_WHITE } from "./colors";
 
 export const readSif = (raw: string): SpaceImageFormat => {
     const lines = raw.split('\n').map(line => line.trim()).filter(line => line.length > 0);
@@ -32,13 +33,13 @@ export default class SpaceImageFormat {
     layers: Image<string>[];
 
     constructor(public dimensions: Dimensions, imagePixels: string[]) {
-        this.layers = chunk(imagePixels, dimensions.x * dimensions.y).map(layerPixels => new Image(dimensions, layerPixels));
+        this.layers = chunk(imagePixels, dimensions.x * dimensions.y).map(layerPixels => new Image(dimensions, layerPixels, BLACK_AND_WHITE));
     }
 
     flatten(): Image<string> {
         // Make a copy of the top layer to mutate
-        const result = new Image(this.dimensions, [...this.layers[0].pixels]);
-
+        const result = Image.clone(this.layers[0]);
+        
         // Merge successive layers into it
         for (let i = 1; i < this.layers.length; i++) {
             const changed = mergeLayers(result, this.layers[i]);
