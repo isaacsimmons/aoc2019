@@ -1,6 +1,10 @@
 import { readInputFile } from '../utils/file';
 import Computer from '../compute/Computer';
 import Buffer from '../compute/Buffer';
+import Layer from '../image/Layer';
+import Dimensions from '../image/Dimensions';
+import { chunk } from '../utils/array';
+import { BREAKOUT_BOARD } from '../image/colors';
 
 const inputText = readInputFile(Number(process.env.DAY), process.env.FILE);
 const program = inputText.trim().split(',').filter(code => code.length > 0).map(Number);
@@ -9,39 +13,53 @@ program[0] = 2; // Free play mode!
 const computer = new Computer(program);
 computer.input = new Buffer();
 
+interface GameState {
+    score: number;
+    screen: Layer;
+    ballAt: Dimensions;
+    paddleAt: Dimensions;
+}
+
+const printer = (commands: number[][], state: GameState) => {
+    commands.forEach(command => {
+        const [x, y, value] = command;
+
+        if (x === -1 && y === 0) {
+            state.score = value;
+            return;
+        }
+
+        if (value === 3) {
+            state.paddleAt = { x, y };
+        } else if (value === 4) {
+            state.ballAt = { x, y };
+        }
+        state.screen.setValue(x, y, String(value));
+    });
+};
+
 const go = async () => {
-    let score = 0;
-    let ballX: number | undefined;
-    let paddleX: number | undefined;
+    const state: GameState = {
+        score: 0,
+        paddleAt: {x: 0, y: 0},
+        ballAt: {x: 0, y: 0},
+        screen: Layer.init(40, 20),
+    };
 
     while (true) {
         computer.runUntilBlockedOrTerminated();
 
         const outputs = computer.output.flush();
-    
-        for (let i = 0; i < outputs.length; i += 3) {
-            const x = outputs[i];
-            const y = outputs[i + 1];
-            const value = outputs[i + 2];
+        const commands = chunk(outputs, 3);
+        printer(commands, state);
 
-            console.log('read', x, y, value);
-    
-            if (x === -1 && y === 0) {
-                score = value;
-                console.log('score', score);
-            } else if (value === 3) { // paddle
-                paddleX = x;
-            } else if (value === 4) { // ball
-                ballX = x;
-            }
-        }
+        console.log('score', state.score);
+        state.screen.print(BREAKOUT_BOARD); // TODO: make the formatter a property of the Layer
 
         let direction = 0;
-        if (paddleX === undefined || ballX === undefined) {
-            console.warn('Got output array without paddle and ball');
-        } else if (paddleX > ballX) {
+        if (state.paddleAt.x > state.ballAt.x) {
             direction = -1;
-        } else if (paddleX < ballX) {
+        } else if (state.paddleAt.x < state.ballAt.x) {
             direction = 1;
         }
         console.log('paddle direction', direction);
