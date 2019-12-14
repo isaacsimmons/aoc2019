@@ -20,24 +20,6 @@ interface GameState {
     paddleAt: Dimensions;
 }
 
-const printer = (commands: number[][], state: GameState) => {
-    commands.forEach(command => {
-        const [x, y, value] = command;
-
-        if (x === -1 && y === 0) {
-            state.score = value;
-            return;
-        }
-
-        if (value === 3) {
-            state.paddleAt = { x, y };
-        } else if (value === 4) {
-            state.ballAt = { x, y };
-        }
-        state.screen.setValue(x, y, String(value));
-    });
-};
-
 const go = async () => {
     const state: GameState = {
         score: 0,
@@ -51,7 +33,21 @@ const go = async () => {
 
         const outputs = computer.output.flush();
         const commands = chunk(outputs, 3);
-        printer(commands, state);
+        commands.forEach(command => {
+            const [x, y, value] = command;
+
+            if (x === -1 && y === 0) {
+                state.score = value;
+                return;
+            }
+
+            if (value === 3) {
+                state.paddleAt = { x, y };
+            } else if (value === 4) {
+                state.ballAt = { x, y };
+            }
+            state.screen.setValue(x, y, String(value));
+        });
 
         console.log('score', state.score);
         state.screen.print(BREAKOUT_BOARD); // TODO: make the formatter a property of the Layer
@@ -62,7 +58,7 @@ const go = async () => {
         } else if (state.paddleAt.x < state.ballAt.x) {
             direction = 1;
         }
-        console.log('paddle direction', direction);
+        // console.log('paddle direction', direction);
         computer.input!.write(direction);
 
         if (computer.status === 'terminated') {
