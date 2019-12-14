@@ -8,7 +8,7 @@ export default class Buffer<T> {
     closed = false;
     position = 0;
 
-    private pendingReads: DeferredRead<T>[] = [];
+    private pendingWaits: DeferredRead<void>[] = [];
 
     constructor(init: T[] = []) {
         this.buff = [...init];
@@ -16,7 +16,7 @@ export default class Buffer<T> {
 
     close() {
         this.closed = true;
-        this.pendingReads.forEach(pendingRead => pendingRead.reject(new Error('Tried to read past end of buffer')));
+        this.pendingWaits.forEach(pw => pw.resolve());
     }
 
     get hasData() {
@@ -36,16 +36,24 @@ export default class Buffer<T> {
     }
 
     async read(): Promise<T> {
+        await this.waitAvailable();
+        return this.readSync();
+    }
+
+    // async readUntilClosed(): Promise<T[]> {
+    // }
+
+    async waitAvailable(): Promise<void> {
         if (this.closed) {
             throw new Error('Tried to read from closed buffer');
         }
 
         if (this.hasData) {
-            return this.readSync();
+            return;
         }
 
-        return new Promise<T>((resolve, reject) => {
-            this.pendingReads.push({ resolve, reject });
+        return new Promise<void>((resolve, reject) => {
+            this.pendingWaits.push({ resolve, reject });
         });
     }
 
@@ -55,20 +63,14 @@ export default class Buffer<T> {
         }
 
         this.buff.push(...val);
-        while (this.pendingReads.length && this.hasData) {
-            this.pendingReads.shift()!.resolve(this.readSync());
-        }
+        this.pendingWaits.forEach(pw => pw.resolve());
     }
 
     flush(): T[] {
-        if (!this.closed) {
-            throw new Error('Tried to flush a non-closed buffer');
-        }
         const vals = this.buff.slice(this.position);
         this.position = this.buff.length;
         return vals;
     }
 
-    // TODO: a write batch method?
     // TODO: a pipe this buffer to this other buffer method?
 }

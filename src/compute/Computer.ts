@@ -2,7 +2,7 @@ import { parseOperator } from './operators';
 import Memory from './Memory';
 import Buffer from './Buffer';
 
-export type Status = 'init' | 'running' | 'terminated';
+export type Status = 'running' | 'waiting' | 'terminated';
 export type Mode = 'position' | 'immediate' | 'relative';
 export interface Parameter {
     num: number;
@@ -11,7 +11,7 @@ export interface Parameter {
 
 export default class Computer {
     address: number = 0;
-    status: Status = 'init';
+    status: Status = 'running';
 
     readonly output = new Buffer<number>();
     readonly inputSeed = new Buffer<number>();
@@ -25,10 +25,12 @@ export default class Computer {
         this.input = input;
     }
 
-    async runStep() {
-        if (this.status !== 'running') {
-            throw new Error('Tried to runStep() when not in running state');
+    runStep() {
+        if (this.status === 'terminated') {
+            throw new Error('Tried to runStep() when terminated');
         }
+
+        this.status = 'running';
 
         const opCode = this.memory.read({ num: this.address, mode: 'position' });
         const { operator, paramModes } = parseOperator(opCode);
@@ -39,12 +41,13 @@ export default class Computer {
         const params = paramValues.map((value, idx):Parameter => ({num: value, mode: paramModes[idx]}));
 
         // Run the current operator
-        const { changeBase, terminate, newAddress, writeAddresses } = await operator.operate(params, this);
-        // TODO: just let the operator mess with the computer directly?
+        const { changeBase, newStatus, newAddress, writeAddresses } = operator.operate(params, this);
  
-        if (terminate) {
-            this.output.close();
+        if (newStatus === 'terminated') {
+            this.output.close(); // TODO: maybe don't bother closing the stream? people can still read from it
             return 'terminated';
+        } else if (newStatus === 'waiting') {
+            return 'waiting';
         }
 
         if (changeBase) {
@@ -63,25 +66,21 @@ export default class Computer {
         return 'running';
     }
 
-    async readInput() {
-        if (this.inputSeed.hasData) {
-            return this.inputSeed.readSync();
+    runUntilBlockedOrTerminated() {
+        this.status = 'running';
+        while(this.status === 'running') {
+            this.status = this.runStep();
         }
-
-        if (this.input === undefined) {
-            throw new Error('Tried to read past input seed with no input stream');
-        }
-
-        return this.input.read();
     }
 
-    async run() {
-        if (this.status !== 'init') {
-            throw new Error('Called run multiple times on computer');
-        }
+    async runUntilTerminated() {
         this.status = 'running';
         while(this.status !== 'terminated') {
-            this.status = await this.runStep();
+            this.status = this.runStep();
+            if (this.status === 'waiting') {
+                await this.input!.waitAvailable();
+                this.status = 'running';
+            }
         }
     }
 }
