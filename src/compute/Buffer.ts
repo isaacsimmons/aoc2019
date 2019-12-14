@@ -24,14 +24,11 @@ export default class Buffer<T> {
     }
 
     readSync() {
-        if (this.closed) {
-            throw new Error('Tried to read (sync) from closed buffer');
-        }
-
-        const val = this.buff[this.position++];
+        const val = this.buff[this.position];
         if (val === undefined) {
             throw new Error('Executed synchronous read when no data was available');
         }
+        this.position++;
         return val;
     }
 
@@ -45,7 +42,7 @@ export default class Buffer<T> {
 
     async waitAvailable(): Promise<void> {
         if (this.closed) {
-            throw new Error('Tried to read from closed buffer');
+            throw new Error('Tried to wait on a closed buffer');
         }
 
         if (this.hasData) {
